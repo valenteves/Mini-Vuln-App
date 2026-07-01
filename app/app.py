@@ -27,6 +27,8 @@ def inicio():
 
 @app.route("/ventas/<int:id>")
 def ventas(id):
+    if(id!=usuario_actual["id"]):
+        return "No autorizado", 403
     ventas_usuario=[]
     for venta in lista_ventas:
         if venta["idUsuario"] == id:
