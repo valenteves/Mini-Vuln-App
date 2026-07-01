@@ -1,0 +1,24 @@
+{% extends "base.html"%}
+
+{% block contenido %}
+    <h1>Tus ventas</h1>
+    {% for venta in ventas %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Item: {{ venta.producto }}</h5>
+                <p class="card-text">
+                    Vendedor: {{ venta.usuarioVendedor }}
+                </p>
+                <p class="card-text">
+                    Comprador: {{ venta.usuarioComprador }}
+                </p>
+                <p class="card-text">
+                    Precio: {{ venta.precio }}
+                </p>
+                <p class="card-text">
+                    Fecha: {{ venta.fecha }}
+                </p>
+            </div>
+        </div>
+    {% endfor%}
+{% endblock %}
