@@ -1,13 +1,19 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, session, url_for
+from flask_limiter import Limiter
+from flask_limiter.errors import RateLimitExceeded
+from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
+app.secret_key = "clave-insegura-del-laboratorio"
+limiter = Limiter(get_remote_address, app=app)
 
 usuarios = [
-    {"id":1, "nombre":"Juan"},
-    {"id":2, "nombre":"Pedro"},
-    {"id":3, "nombre":"José"},
-    {"id":4, "nombre":"Ana"},
-    {"id":100, "nombre":"Admin"}
+    {"id":1, "nombre":"Juan", "usuario":"juan", "password":"123456"},
+    {"id":2, "nombre":"Pedro", "usuario":"pedro", "password":"password"},
+    {"id":3, "nombre":"José", "usuario":"jose", "password":"qwerty"},
+    {"id":4, "nombre":"Ana", "usuario":"ana", "password":"dragon"},
+    {"id":5, "nombre":"Gerente", "usuario":"gerente", "password":"football", "flag":"flag{gerente_pwned}"},
+    {"id":100, "nombre":"Admin", "usuario":"admin", "password":"admin123"}
 ]
 
 lista_ventas = [
@@ -19,25 +25,69 @@ lista_ventas = [
     {"idUsuario": 100, "usuarioVendedor": "Admin", "producto": "flag{me_descubriste}"},
 ]
 
-usuario_actual=usuarios[0]
+def obtener_usuario_actual():
+    usuario_id = session.get("usuario_id")
+    for usuario in usuarios:
+        if usuario["id"] == usuario_id:
+            return usuario
+    return None
 
 @app.route("/")
 def inicio():
-    return render_template("index.html",usuario=usuario_actual)
+    usuario = obtener_usuario_actual()
+    if not usuario:
+        return redirect(url_for("iniciar_sesion"))
+    return render_template("index.html",usuario=usuario)
 
 @app.route("/ventas/<int:id>")
 def ventas(id):
-    if(id!=usuario_actual["id"]):
+    usuario = obtener_usuario_actual()
+    if not usuario:
+        return redirect(url_for("iniciar_sesion"))
+
+    if id != usuario["id"]:
         return "No autorizado", 403
+
     ventas_usuario=[]
     for venta in lista_ventas:
         if venta["idUsuario"] == id:
             ventas_usuario.append(venta)
-    return render_template("ventas.html",ventas=ventas_usuario, usuario=usuario_actual)
+    return render_template("ventas.html",ventas=ventas_usuario, usuario=usuario)
 
-@app.route("/iniciar_sesion")
+@app.route("/iniciar_sesion", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def iniciar_sesion():
-    return render_template("iniciar_sesion.html")
+    error = None
+    usuario_encontrado = None
+
+    if request.method == "POST":
+        usuario_form = request.form.get("usuario", "")
+        password_form = request.form.get("password", "")
+
+        for usuario in usuarios:
+            if usuario["usuario"] == usuario_form and usuario["password"] == password_form:
+                usuario_encontrado = usuario
+                break
+
+        if usuario_encontrado:
+            session["usuario_id"] = usuario_encontrado["id"]
+            return redirect(url_for("inicio"))
+
+        error = "Login incorrecto"
+
+    return render_template("iniciar_sesion.html", error=error)
+
+@app.errorhandler(RateLimitExceeded)
+def limite_excedido(error):
+    return render_template(
+        "iniciar_sesion.html",
+        error="Login incorrecto. Demasiados intentos fallidos !!!1"
+    ), 429
+
+@app.route("/cerrar_sesion")
+def cerrar_sesion():
+    session.clear()
+    return redirect(url_for("iniciar_sesion"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
