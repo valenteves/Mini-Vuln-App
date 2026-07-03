@@ -1,7 +1,25 @@
 {% extends "base.html" %}
 
 {% block contenido %}
-    <h1>
-        Iniciar Sesion
-    </h1>
+    <h1>Iniciar Sesion</h1>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="/iniciar_sesion" class="mt-4">
+        <div class="mb-3">
+            <label for="usuario" class="form-label">Usuario</label>
+            <input type="text" class="form-control" id="usuario" name="usuario">
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="password" name="password">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Ingresar</button>
+    </form>
 {% endblock %}

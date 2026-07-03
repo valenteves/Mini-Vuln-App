@@ -4,4 +4,10 @@
     <h1>
         Bienvenido, {{ usuario.nombre }}
     </h1>
+
+    {% if usuario.flag is defined %}
+        <div class="alert alert-success mt-4">
+            {{ usuario.flag }}
+        </div>
+    {% endif %}
 {% endblock %}

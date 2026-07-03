@@ -20,13 +20,18 @@
 
                 <div class="collapse navbar-collapse" id="menu">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/iniciar_sesion">Iniciar Sesión</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="/ventas/{{ usuario.id }}">Mis ventas</a>
-                        </li>
+                        {% if usuario is defined %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/ventas/{{ usuario.id }}">Mis ventas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/cerrar_sesion">Cerrar Sesión</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/iniciar_sesion">Iniciar Sesión</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
