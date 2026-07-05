@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 
 app = Flask(__name__)
 app.secret_key = "clave-insegura-del-laboratorio"
@@ -21,7 +21,7 @@ lista_ventas = [
     {"idUsuario": 100, "usuarioVendedor": "Admin", "producto": "flag{me_descubriste}"},
 ]
 
-usuario_actual=usuarios[0]
+lista_comentarios = []
 
 def obtener_usuario_actual():
     usuario_id = session.get("usuario_id")
@@ -42,12 +42,42 @@ def ventas(id):
     usuario = obtener_usuario_actual()
     if not usuario:
         return redirect(url_for("iniciar_sesion"))
-
-    ventas_usuario=[]
+    
+    ventas_usuario = []
     for venta in lista_ventas:
         if venta["idUsuario"] == id:
             ventas_usuario.append(venta)
-    return render_template("ventas.html",ventas=ventas_usuario, usuario=usuario)
+
+    return render_template("ventas.html", ventas=ventas_usuario, usuario=usuario)
+
+@app.route("/chat", methods=["GET", "POST"])
+def comentarios():
+    usuario = obtener_usuario_actual()
+    if not usuario:
+        return redirect(url_for("iniciar_sesion"))
+    
+    flag = None
+
+    if request.method == "POST":
+        texto = request.form.get("comentario", "")
+
+        lista_comentarios.append({
+            "autor": usuario["nombre"],
+            "texto": request.form.get("comentario", "")
+        })
+
+        if texto == "<script>alert()</script>":
+            flag = "flag{xss_explotado}"
+            flash("flag{xss_explotado}", "success")
+        
+        return redirect(url_for("comentarios"))
+
+    return render_template(
+        "comentarios.html",
+        comentarios=lista_comentarios,
+        usuario=usuario,
+        flag=flag
+    )
 
 @app.route("/iniciar_sesion", methods=["GET", "POST"])
 def iniciar_sesion():
