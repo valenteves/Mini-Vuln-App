@@ -1,0 +1,86 @@
+
+{% extends "base.html" %}
+
+{% block contenido %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for categoria, mensaje in messages %}
+            <div class="alert alert-{{ categoria }}">
+                {{ mensaje }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Chat de Ventas</h3>
+            </div>
+
+            <div class="card-body">
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Escribí un comentario</label>
+                        <textarea
+                            class="form-control"
+                            name="comentario"
+                            rows="4"
+                            placeholder="Escribí tu comentario..."
+                            required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Publicar
+                    </button>
+                </form>
+
+                <hr>
+
+                <h4>Comentarios publicados</h4>
+
+                <div class="border rounded p-3 overflow-auto" style="max-height: 400px;">
+
+                    {% if comentarios %}
+
+                        {% for comentario in comentarios %}
+
+                            <div class="card mb-3">
+                                <div class="card-body">
+
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        {{ comentario.autor }}
+                                    </h6>
+
+                                    <!-- VULNERABLE A XSS -->
+                                    <p class="card-text">
+                                        {{ comentario.texto }}
+                                    </p>
+
+                                </div>
+                            </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <div class="alert alert-secondary mb-0">
+                            Todavía no hay comentarios.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+

@@ -25,6 +25,9 @@
                                 <a class="nav-link" href="/ventas/{{ usuario.id }}">Mis ventas</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="/chat">Chat Ventas</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="/cerrar_sesion">Cerrar Sesión</a>
                             </li>
                         {% else %}
@@ -36,7 +39,7 @@
                 </div>
             </div>
         </nav>
-        <main class="container mt-4">
+        <main class="container mt-4 pb-5">
             {% block contenido %}
             {% endblock %}
         </main> 

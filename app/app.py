@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from flask_limiter import Limiter
 from flask_limiter.errors import RateLimitExceeded
 from flask_limiter.util import get_remote_address
@@ -25,6 +25,8 @@ lista_ventas = [
     {"idUsuario": 100, "usuarioVendedor": "Admin", "producto": "flag{me_descubriste}"},
 ]
 
+lista_comentarios = []
+
 def obtener_usuario_actual():
     usuario_id = session.get("usuario_id")
     for usuario in usuarios:
@@ -46,13 +48,37 @@ def ventas(id):
         return redirect(url_for("iniciar_sesion"))
 
     if id != usuario["id"]:
-        return "No autorizado", 403
+        flash("No estás autorizado para acceder a las ventas de otro usuario.", "danger")
+        return redirect(url_for("ventas", id=usuario["id"]))
 
-    ventas_usuario=[]
+    ventas_usuario = []
     for venta in lista_ventas:
         if venta["idUsuario"] == id:
             ventas_usuario.append(venta)
-    return render_template("ventas.html",ventas=ventas_usuario, usuario=usuario)
+
+    return render_template("ventas.html", ventas=ventas_usuario, usuario=usuario)
+
+@app.route("/chat", methods=["GET", "POST"])
+def comentarios():
+    usuario = obtener_usuario_actual()
+    if not usuario:
+        return redirect(url_for("iniciar_sesion"))
+    
+
+    if request.method == "POST":
+
+        lista_comentarios.append({
+            "autor": usuario["nombre"],
+            "texto": request.form.get("comentario", "")
+        })
+        
+        return redirect(url_for("comentarios"))
+
+    return render_template(
+        "comentarios.html",
+        comentarios=lista_comentarios,
+        usuario=usuario,
+    )
 
 @app.route("/iniciar_sesion", methods=["GET", "POST"])
 @limiter.limit("5 per minute", methods=["POST"])

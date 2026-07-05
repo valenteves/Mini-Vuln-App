@@ -1,5 +1,5 @@
 services:
-  mini-vuln-app:
+  mini-vnhuln-app:
     build:
       context: ./app
     ports:
